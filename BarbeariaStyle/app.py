@@ -15,154 +15,63 @@ def init_db():
     conn = get_db_connection()
     # Cria a tabela de usuários
     conn.execute('''
-                 CREATE TABLE IF NOT EXISTS usuarios
-                 (
-                     id
-                     INTEGER
-                     PRIMARY
-                     KEY
-                     AUTOINCREMENT,
-                     nome
-                     TEXT
-                     NOT
-                     NULL,
-                     email
-                     TEXT
-                     UNIQUE
-                     NOT
-                     NULL,
-                     senha
-                     TEXT
-                     NOT
-                     NULL
-                 )
-                 ''')
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            senha TEXT NOT NULL
+        )
+    ''')
     # Cria a tabela de agendamentos
     conn.execute('''
-                 CREATE TABLE IF NOT EXISTS agendamentos
-                 (
-                     id
-                     INTEGER
-                     PRIMARY
-                     KEY
-                     AUTOINCREMENT,
-                     cliente_nome
-                     TEXT
-                     NOT
-                     NULL,
-                     profissional
-                     TEXT
-                     NOT
-                     NULL,
-                     servico
-                     TEXT
-                     NOT
-                     NULL,
-                     data
-                     TEXT
-                     NOT
-                     NULL,
-                     horario
-                     TEXT
-                     NOT
-                     NULL
-                 )
-                 ''')
+        CREATE TABLE IF NOT EXISTS agendamentos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cliente_nome TEXT NOT NULL,
+            profissional TEXT NOT NULL,
+            servico TEXT NOT NULL,
+            data TEXT NOT NULL,
+            horario TEXT NOT NULL
+        )
+    ''')
     # Cria a tabela de serviços
     conn.execute('''
-                 CREATE TABLE IF NOT EXISTS servicos
-                 (
-                     id
-                     INTEGER
-                     PRIMARY
-                     KEY
-                     AUTOINCREMENT,
-                     nome
-                     TEXT
-                     NOT
-                     NULL,
-                     descricao
-                     TEXT,
-                     preco
-                     REAL
-                 )
-                 ''')
+        CREATE TABLE IF NOT EXISTS servicos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT,
+            preco REAL
+        )
+    ''')
     # Cria a tabela de profissionais
     conn.execute('''
-                 CREATE TABLE IF NOT EXISTS profissionais
-                 (
-                     id
-                     INTEGER
-                     PRIMARY
-                     KEY
-                     AUTOINCREMENT,
-                     nome
-                     TEXT
-                     NOT
-                     NULL,
-                     email
-                     TEXT
-                     UNIQUE
-                     NOT
-                     NULL,
-                     telefone
-                     TEXT,
-                     comissao
-                     REAL,
-                     cpf_cnpj
-                     TEXT
-                     UNIQUE
-                     NOT
-                     NULL
-                 )
-                 ''')
+        CREATE TABLE IF NOT EXISTS profissionais (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            telefone TEXT,
+            comissao REAL,
+            cpf_cnpj TEXT UNIQUE NOT NULL
+        )
+    ''')
     # Cria a tabela de vendas para o financeiro do profissional
     conn.execute('''
-                 CREATE TABLE IF NOT EXISTS vendas
-                 (
-                     id
-                     INTEGER
-                     PRIMARY
-                     KEY
-                     AUTOINCREMENT,
-                     profissional_nome
-                     TEXT
-                     NOT
-                     NULL,
-                     valor
-                     REAL
-                     NOT
-                     NULL,
-                     forma_pagamento
-                     TEXT
-                     NOT
-                     NULL,
-                     observacao
-                     TEXT,
-                     data_venda
-                     TEXT
-                     NOT
-                     NULL
-                 )
-                 ''')
+        CREATE TABLE IF NOT EXISTS vendas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            profissional_nome TEXT NOT NULL,
+            valor REAL NOT NULL,
+            forma_pagamento TEXT NOT NULL,
+            observacao TEXT,
+            data_venda TEXT NOT NULL
+        )
+    ''')
     # Cria a tabela de configurações
     conn.execute('''
-                 CREATE TABLE IF NOT EXISTS configuracoes
-                 (
-                     id
-                     INTEGER
-                     PRIMARY
-                     KEY
-                     AUTOINCREMENT,
-                     chave
-                     TEXT
-                     UNIQUE
-                     NOT
-                     NULL,
-                     valor
-                     TEXT
-                 )
-                 ''')
+        CREATE TABLE IF NOT EXISTS configuracoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chave TEXT UNIQUE NOT NULL,
+            valor TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -177,7 +86,7 @@ def home():
     configuracoes = {row['chave']: row['valor'] for row in
                      conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
     servicos = conn.execute('SELECT * FROM servicos').fetchall()
-    profissionais = conn.execute('SELECT * FROM profissionais').fetchall()
+    profissionais = conn.execute('SELECT nome FROM profissionais').fetchall()
     conn.close()
     return render_template('index.html', configuracoes=configuracoes, servicos=servicos, profissionais=profissionais)
 
@@ -287,22 +196,24 @@ def painel_profissional():
     profissional = conn.execute('SELECT * FROM profissionais WHERE nome = ?', (profissional_nome,)).fetchone()
     agendamentos_do_profissional = conn.execute('SELECT * FROM agendamentos WHERE profissional = ?',
                                                 (profissional_nome,)).fetchall()
+    servicos = conn.execute('SELECT nome FROM servicos').fetchall()
     conn.close()
 
     return render_template('painel_profissional.html', profissional=profissional,
-                           agendamentos=agendamentos_do_profissional)
+                           agendamentos=agendamentos_do_profissional, servicos=servicos)
 
 
 @app.route('/painel_profissional/adicionar_agendamento', methods=['POST'])
 def painel_profissional_adicionar_agendamento():
     cliente_nome = request.form['cliente_nome']
     profissional_nome = request.form['profissional_nome']
+    servico = request.form['servico']
     data = request.form['data']
     horario = request.form['horario']
 
     conn = get_db_connection()
     conn.execute('INSERT INTO agendamentos (cliente_nome, profissional, servico, data, horario) VALUES (?, ?, ?, ?, ?)',
-                 (cliente_nome, profissional_nome, data, horario))
+                 (cliente_nome, profissional_nome, servico, data, horario))
     conn.commit()
     conn.close()
     flash('Agendamento adicionado com sucesso!')
@@ -673,6 +584,8 @@ def configuracoes():
                      ('instagram', request.form.get('instagram', '')))
         conn.execute('INSERT INTO configuracoes (chave, valor) VALUES (?, ?)',
                      ('whatsapp', request.form.get('whatsapp', '')))
+        conn.execute('INSERT INTO configuracoes (chave, valor) VALUES (?, ?)',
+                     ('favicon_url', request.form.get('favicon_url', '')))
 
         conn.commit()
         flash('Configurações salvas com sucesso!')
