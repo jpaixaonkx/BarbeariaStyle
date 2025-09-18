@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barbearia Style</title>
+    <link rel="icon" type="image/x-icon" href="https://placehold.co/32x32/1a1a1a/d4af37.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -38,6 +39,44 @@
             box-shadow: 0 10px 20px rgba(212, 175, 55, 0.4);
             transition: all 0.3s ease-in-out;
         }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-container {
+            background-color: #1a1a1a;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            max-width: 32rem;
+            width: 100%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-overlay.open .modal-container {
+            transform: scale(1);
+        }
+        .text-error {
+            color: #EF4444;
+        }
+        .text-success {
+            color: #10B981;
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col min-h-screen">
@@ -48,7 +87,7 @@
             <div class="space-x-4">
                 <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Login</a>
                 <a href="{{ url_for('cadastro') }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Cadastro</a>
-                <a href="{{ url_for('configuracoes') }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Contato</a>
+                <button onclick="openModal('info')" class="text-gray-400 hover:text-primary transition-colors duration-200">Contato</button>
             </div>
         </nav>
     </header>
@@ -58,34 +97,85 @@
         <!-- Galeria de Serviços -->
         <section class="mb-12">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Painel de Imagem 1 -->
+                <!-- Painel 1 -->
                 <div class="bg-card p-6 rounded-lg shadow-lg border border-[#3a3a3a] text-center card-3d">
                     <img src="/static/ft1.jpg" alt="Corte de Cabelo" class="w-full h-48 object-cover rounded-lg mb-4">
                     <h3 class="text-xl font-bold text-primary">Corte de Cabelo</h3>
                 </div>
-                <!-- Painel de Imagem 2 -->
+                <!-- Painel 2 -->
                 <div class="bg-card p-6 rounded-lg shadow-lg border border-[#3a3a3a] text-center card-3d">
                     <img src="/static/ft3.jpg" alt="Barba Completa" class="w-full h-48 object-cover rounded-lg mb-4">
                     <h3 class="text-xl font-bold text-primary">Barba Completa</h3>
                 </div>
-                <!-- Painel de Imagem 3 -->
+                <!-- Painel 3 -->
                 <div class="bg-card p-6 rounded-lg shadow-lg border border-[#3a3a3a] text-center card-3d">
                     <img src="/static/ft4.webp" alt="Tratamento de Pele" class="w-full h-48 object-cover rounded-lg mb-4">
                     <h3 class="text-xl font-bold text-primary">Tratamento de Pele</h3>
                 </div>
-                <!-- Painel de Imagem 4 -->
+                <!-- Painel 4 -->
                 <div class="bg-card p-6 rounded-lg shadow-lg border border-[#3a3a3a] text-center card-3d">
                     <img src="/static/ft5.webp" alt="Hidratação Capilar" class="w-full h-48 object-cover rounded-lg mb-4">
                     <h3 class="text-xl font-bold text-primary">Hidratação Capilar</h3>
                 </div>
-                <!-- Painel de Imagem 5 -->
+                <!-- Painel 5 -->
                 <div class="bg-card p-6 rounded-lg shadow-lg border border-[#3a3a3a] text-center card-3d">
-                    <img src="/static/ft6.webp" alt="Massagem Facial" class="w-full h-48 object-cover rounded-lg mb-4">
+                    <img src="/static/ft6.webp" alt="Social" class="w-full h-48 object-cover rounded-lg mb-4">
                     <h3 class="text-xl font-bold text-primary">Social</h3>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- Modal de Informações/Contato -->
+    <div id="info-modal" class="modal-overlay">
+        <div class="modal-container">
+            <h3 class="text-2xl font-bold text-primary mb-6">Informações e Contato</h3>
+            <div class="space-y-6">
+                <!-- Horários -->
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Horário de Funcionamento</h4>
+                    <ul class="text-gray-400 space-y-1">
+                        {% for dia in ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'] %}
+                            {% if 'horario_' + dia in configuracoes and configuracoes['horario_' + dia] %}
+                            <li>
+                                <span class="font-medium text-white">{{ dia }}:</span>
+                                {{ configuracoes['horario_' + dia] }}
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                <!-- Contatos -->
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Contatos</h4>
+                    <ul class="text-gray-400 space-y-1">
+                        {% if 'telefone' in configuracoes and configuracoes.telefone %}
+                        <li><span class="font-medium text-white">Telefone:</span> {{ configuracoes.telefone }}</li>
+                        {% endif %}
+                        {% if 'email_contato' in configuracoes and configuracoes.email_contato %}
+                        <li><span class="font-medium text-white">Email:</span> {{ configuracoes.email_contato }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <!-- Redes Sociais -->
+                <div>
+                    <h4 class="text-xl font-bold mb-2">Redes Sociais</h4>
+                    <div class="flex space-x-4 text-2xl">
+                        {% if 'instagram' in configuracoes and configuracoes.instagram %}
+                        <a href="https://instagram.com/{{ configuracoes.instagram }}" target="_blank" class="text-primary hover:text-white"><i class="fab fa-instagram"></i></a>
+                        {% endif %}
+                        {% if 'whatsapp' in configuracoes and configuracoes.whatsapp %}
+                        <a href="https://wa.me/{{ configuracoes.whatsapp }}" target="_blank" class="text-primary hover:text-white"><i class="fab fa-whatsapp"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end mt-8">
+                <button onclick="closeModal('info')" class="btn-primary px-6 py-2 rounded-full bg-gray-600 hover:bg-gray-700 text-white">Fechar</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Rodapé -->
     <footer class="p-6 text-center text-gray-400 bg-black mt-auto">
@@ -103,5 +193,18 @@
             {% endif %}
         </div>
     </footer>
+    <script>
+        function openModal(type) {
+            const modal = document.getElementById(`${type}-modal`);
+            modal.classList.add('open');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(type) {
+            const modal = document.getElementById(`${type}-modal`);
+            modal.classList.remove('open');
+            document.body.classList.remove('overflow-hidden');
+        }
+    </script>
 </body>
 </html>

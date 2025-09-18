@@ -135,7 +135,7 @@
     <div id="agendar-modal" class="modal-overlay">
         <div class="modal-container">
             <h3 class="text-2xl font-bold text-primary mb-6">Agendar Novo Horário</h3>
-            <form action="{{ url_for('agendar_servico') }}" method="post" onsubmit="return checkAvailability()">
+            <form id="agendar-form" action="{{ url_for('agendar_servico') }}" method="post" onsubmit="return checkAvailability(event)">
                 <input type="hidden" name="cliente_nome" value="{{ cliente_nome }}">
                 <div class="mb-4">
                     <label for="servico" class="block text-sm font-medium text-gray-400 mb-2">Serviço</label>
@@ -240,15 +240,18 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        async function checkAvailability() {
+        async function checkAvailability(event) {
+            event.preventDefault(); // Impede o envio do formulário por padrão
+
+            const servico = document.getElementById('servico').value;
             const profissional = document.getElementById('profissional').value;
             const data = document.getElementById('data').value;
             const horario = document.getElementById('horario').value;
             const messageElement = document.getElementById('availability-message');
 
-            if (!profissional || !data || !horario) {
+            if (!servico || !profissional || !data || !horario) {
                 messageElement.textContent = '';
-                return true;
+                return false;
             }
 
             const response = await fetch(`/api/check_availability?profissional=${profissional}&data=${data}&horario=${horario}`);
@@ -263,6 +266,7 @@
                 messageElement.textContent = 'Horário disponível!';
                 messageElement.classList.remove('text-error');
                 messageElement.classList.add('text-success');
+                event.target.submit(); // Envia o formulário se o horário estiver disponível
                 return true;
             }
         }
@@ -271,7 +275,6 @@
         document.getElementById('profissional').addEventListener('change', checkAvailability);
         document.getElementById('data').addEventListener('change', checkAvailability);
         document.getElementById('horario').addEventListener('change', checkAvailability);
-
     </script>
 </body>
 </html>
