@@ -64,9 +64,9 @@
 <body class="antialiased flex flex-col min-h-screen">
     <!-- Cabeçalho -->
     <header class="p-4 bg-black shadow-md">
-        <nav class="container mx-auto flex justify-between items-center">
+        <nav class="container mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <h1 class="text-3xl font-bold text-primary cinzel-font">Barbearia Style</h1>
-            <div class="space-x-4">
+            <div class="space-x-4 flex items-center">
                 <a href="{{ url_for('home') }}" class="btn-header">Home</a>
                 <a href="{{ url_for('admin') }}" class="btn-active-header">Painel</a>
                 <a href="{{ url_for('configuracoes') }}" class="btn-header">Contato</a>
