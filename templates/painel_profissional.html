@@ -33,6 +33,32 @@
         .btn-primary:hover {
             background-color: #C9A329;
         }
+        .btn-header {
+            background-color: #1a1a1a;
+            color: #D4AF37;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .btn-header:hover {
+            background-color: #2a2a2a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+        .btn-active-header {
+            background-color: #D4AF37;
+            color: #000000;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .btn-active-header:hover {
+            background-color: #C9A329;
+        }
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -72,11 +98,11 @@
     <header class="p-4 bg-black shadow-md">
         <nav class="container mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold text-primary cinzel-font">Barbearia Style</h1>
-            <div class="space-x-4">
-                <p class="text-gray-400">Bem-vindo, {{ profissional['nome'] }}</p>
-                <a href="{{ url_for('painel_profissional', profissional_nome=profissional['nome']) }}" class="text-primary font-bold">Agenda</a>
-                <a href="{{ url_for('painel_profissional_financeiro', profissional_nome=profissional['nome']) }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Financeiro</a>
-                <a href="/" class="text-gray-400 hover:text-primary transition-colors duration-200">Sair</a>
+            <div class="space-x-4 flex items-center">
+                <p class="text-gray-400 hidden sm:block">Bem-vindo, {{ profissional['nome'] }}</p>
+                <a href="{{ url_for('painel_profissional', profissional_nome=profissional['nome']) }}" class="btn-active-header">Agenda</a>
+                <a href="{{ url_for('painel_profissional_financeiro', profissional_nome=profissional['nome']) }}" class="btn-header">Financeiro</a>
+                <a href="{{ url_for('login_profissional') }}" class="btn-header">Sair</a>
             </div>
         </nav>
     </header>
@@ -96,9 +122,9 @@
                 {% endif %}
             {% endwith %}
 
-            <div class="mb-6 flex justify-between items-center">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
                 <h3 class="text-xl font-bold">Agendamentos do Dia</h3>
-                <button onclick="openModal('add')" class="btn-primary px-4 py-2 rounded-full text-sm">Adicionar Agendamento</button>
+                <button onclick="openModal('add')" class="btn-primary px-4 py-2 rounded-full text-sm w-full sm:w-auto">Adicionar Agendamento</button>
             </div>
 
             <div class="overflow-x-auto">
@@ -183,11 +209,13 @@
         function openModal(type) {
             const modal = document.getElementById(`${type}-modal`);
             modal.classList.add('open');
+            document.body.classList.add('overflow-hidden');
         }
 
         function closeModal(type) {
             const modal = document.getElementById(`${type}-modal`);
             modal.classList.remove('open');
+            document.body.classList.remove('overflow-hidden');
         }
     </script>
 </body>

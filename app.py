@@ -170,16 +170,23 @@ def agendar_servico():
     profissional = conn.execute('SELECT email, telefone FROM profissionais WHERE nome = ?',
                                 (profissional_nome,)).fetchone()
 
-    if profissional and profissional['email']:
-        subject = "Novo Agendamento na Barbearia Style"
-        body = f"Olá {profissional_nome},\n\n" \
-               f"Você tem um novo agendamento:\n" \
-               f"Cliente: {cliente_nome}\n" \
-               f"Serviço: {servico}\n" \
-               f"Data: {data}\n" \
-               f"Horário: {horario}\n\n" \
-               f"Até logo!"
-        send_email_notification(profissional['email'], subject, body)
+    if profissional:
+        # Envia e-mail de notificação (se configurado)
+        if profissional['email']:
+            subject = "Novo Agendamento na Barbearia Style"
+            body = f"Olá {profissional_nome},\n\n" \
+                   f"Você tem um novo agendamento:\n" \
+                   f"Cliente: {cliente_nome}\n" \
+                   f"Serviço: {servico}\n" \
+                   f"Data: {data}\n" \
+                   f"Horário: {horario}\n\n" \
+                   f"Até logo!"
+            send_email_notification(profissional['email'], subject, body)
+
+        # Envia notificação de WhatsApp (se configurado)
+        if profissional['telefone']:
+            message = f"Olá {profissional_nome}, você tem um novo agendamento: Cliente: {cliente_nome}, Serviço: {servico}, Data: {data}, Horário: {horario}."
+            send_whatsapp_notification(profissional['telefone'], message)
 
     conn.close()
     flash('Agendamento realizado com sucesso!', 'success')
@@ -406,7 +413,11 @@ def cadastro():
 
 @app.route('/admin')
 def admin():
-    return render_template('admin.html')
+    conn = get_db_connection()
+    configuracoes = {row['chave']: row['valor'] for row in
+                     conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
+    conn.close()
+    return render_template('admin.html', configuracoes=configuracoes)
 
 
 # Rotas para Gerenciar Usuários

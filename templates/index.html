@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barbearia Style</title>
-    <link rel="icon" type="image/x-icon" href="https://placehold.co/32x32/1a1a1a/d4af37.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -33,6 +32,20 @@
         }
         .btn-primary:hover {
             background-color: #C9A329;
+        }
+        .btn-header {
+            background-color: #1a1a1a;
+            color: #D4AF37;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .btn-header:hover {
+            background-color: #2a2a2a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
         }
         .card-3d:hover {
             transform: translateY(-10px) scale(1.05);
@@ -85,9 +98,9 @@
         <nav class="container mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold text-primary playfair-font">Barbearia Style</h1>
             <div class="space-x-4">
-                <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Login</a>
-                <a href="{{ url_for('cadastro') }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Cadastro</a>
-                <button onclick="openModal('info')" class="text-gray-400 hover:text-primary transition-colors duration-200">Contato</button>
+                <a href="{{ url_for('login') }}" class="btn-header">Login</a>
+                <a href="{{ url_for('cadastro') }}" class="btn-header">Cadastro</a>
+                <button onclick="openModal('info')" class="btn-header">Contato</button>
             </div>
         </nav>
     </header>
