@@ -91,18 +91,30 @@
         .modal-overlay.open .modal-container {
             transform: scale(1);
         }
+        /* Ajuste para botões responsivos */
+        .btn-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        @media (min-width: 640px) {
+            .btn-actions {
+                flex-direction: row;
+                gap: 1rem;
+            }
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col min-h-screen">
     <!-- Cabeçalho -->
     <header class="p-4 bg-black shadow-md">
-        <nav class="container mx-auto flex justify-between items-center">
+        <nav class="container mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <h1 class="text-3xl font-bold text-primary cinzel-font">Barbearia Style</h1>
-            <div class="space-x-4 flex items-center">
+            <div class="space-x-4 flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <p class="text-gray-400 hidden sm:block">Bem-vindo, {{ profissional['nome'] }}</p>
-                <a href="{{ url_for('painel_profissional', profissional_nome=profissional['nome']) }}" class="btn-active-header">Agenda</a>
-                <a href="{{ url_for('painel_profissional_financeiro', profissional_nome=profissional['nome']) }}" class="btn-header">Financeiro</a>
-                <a href="{{ url_for('login_profissional') }}" class="btn-header">Sair</a>
+                <a href="{{ url_for('painel_profissional', profissional_nome=profissional['nome']) }}" class="btn-active-header w-full text-center sm:w-auto">Agenda</a>
+                <a href="{{ url_for('painel_profissional_financeiro', profissional_nome=profissional['nome']) }}" class="btn-header w-full text-center sm:w-auto">Financeiro</a>
+                <a href="{{ url_for('login_profissional') }}" class="btn-header w-full text-center sm:w-auto">Sair</a>
             </div>
         </nav>
     </header>
