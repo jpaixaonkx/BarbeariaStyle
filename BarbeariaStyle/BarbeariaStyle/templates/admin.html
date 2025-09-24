@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Administração</title>
-    <link rel="icon" type="image/x-icon" href="{{ configuracoes.favicon_url }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,43 +32,17 @@
         .btn-primary:hover {
             background-color: #C9A329;
         }
-        .btn-header {
-            background-color: #1a1a1a;
-            color: #D4AF37;
-            font-weight: 700;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .btn-header:hover {
-            background-color: #2a2a2a;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-        }
-        .btn-active-header {
-            background-color: #D4AF37;
-            color: #000000;
-            font-weight: 700;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .btn-active-header:hover {
-            background-color: #C9A329;
-        }
     </style>
 </head>
 <body class="antialiased flex flex-col min-h-screen">
     <!-- Cabeçalho -->
     <header class="p-4 bg-black shadow-md">
-        <nav class="container mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+        <nav class="container mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold text-primary cinzel-font">Barbearia Style</h1>
-            <div class="space-x-4 flex items-center">
-                <a href="{{ url_for('home') }}" class="btn-header">Home</a>
-                <a href="{{ url_for('admin') }}" class="btn-active-header">Painel</a>
-                <a href="{{ url_for('configuracoes') }}" class="btn-header">Contato</a>
+            <div class="space-x-4">
+                <a href="{{ url_for('home') }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Home</a>
+                <a href="{{ url_for('admin') }}" class="text-primary font-bold">Painel</a>
+                <a href="{{ url_for('configuracoes') }}" class="text-gray-400 hover:text-primary transition-colors duration-200">Contato</a>
             </div>
         </nav>
     </header>

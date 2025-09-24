@@ -1,7 +1,4 @@
 import sqlite3
-import smtplib
-from email.mime.text import MIMEText
-import requests
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
 app = Flask(__name__)
@@ -83,80 +80,11 @@ def init_db():
 init_db()
 
 
-# --- Função de Envio de E-mail ---
-def send_email_notification(to_email, subject, body):
-    # Por favor, configure estas variáveis com as informações do seu servidor SMTP
-    # Exemplo para Gmail:
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = "jpaixaonkx.271@gmail.com"  # Coloque o seu e-mail aqui
-    sender_password = "a g u q v t o k h e d x n y s d"  # Coloque a sua senha de app aqui
-
-    # Remova o 'return' abaixo para ativar o envio de e-mail.
-    # return
-
-    try:
-        msg = MIMEText(body)
-        msg['Subject'] = subject
-        msg['From'] = sender_email
-        msg['To'] = to_email
-
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, to_email, msg.as_string())
-        print(f"E-mail de notificação enviado para {to_email}")
-    except Exception as e:
-        print(f"Erro ao enviar e-mail: {e}")
-
-
-# --- Função de Envio de WhatsApp ---
-def send_whatsapp_notification(to_phone_number, message):
-    # Esta função é um exemplo. Para usá-la, você precisa de uma API de WhatsApp.
-    # Por exemplo, a API da Twilio:
-    # account_sid = "SUA_ACCOUNT_SID"
-    # auth_token = "SEU_AUTH_TOKEN"
-    # twilio_whatsapp_number = "whatsapp:+14155238886"
-
-    # Remova o 'return' abaixo e configure a API para ativá-la.
-    return
-
-    try:
-        # Exemplo de uso da API da Twilio
-        url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
-        payload = {
-            "To": f"whatsapp:{to_phone_number}",
-            "From": twilio_whatsapp_number,
-            "Body": message
-        }
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-
-        response = requests.post(url, data=payload, headers=headers, auth=(account_sid, auth_token))
-        if response.status_code == 201:
-            print(f"Notificação de WhatsApp enviada para {to_phone_number}")
-        else:
-            print(f"Erro ao enviar WhatsApp: {response.text}")
-    except Exception as e:
-        print(f"Erro ao enviar WhatsApp: {e}")
-
-
-# --- Rota para a animação ---
 @app.route('/')
-def animacao():
-    return render_template('animacao.html')
-
-
-# --- Rota para o index.html principal ---
-@app.route('/home')
 def home():
     conn = get_db_connection()
     configuracoes = {row['chave']: row['valor'] for row in
                      conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
-    # Adicionando o favicon aqui
-    configuracoes['favicon_url'] = url_for('static', filename='logo.png')
-
     servicos = conn.execute('SELECT * FROM servicos').fetchall()
     profissionais = conn.execute('SELECT nome FROM profissionais').fetchall()
     conn.close()
@@ -166,38 +94,15 @@ def home():
 @app.route('/agendar_servico', methods=['POST'])
 def agendar_servico():
     cliente_nome = request.form['cliente_nome']
-    profissional_nome = request.form['profissional']
+    profissional = request.form['profissional']
     servico = request.form['servico']
     data = request.form['data']
     horario = request.form['horario']
 
     conn = get_db_connection()
     conn.execute('INSERT INTO agendamentos (cliente_nome, profissional, servico, data, horario) VALUES (?, ?, ?, ?, ?)',
-                 (cliente_nome, profissional_nome, servico, data, horario))
+                 (cliente_nome, profissional, servico, data, horario))
     conn.commit()
-
-    # Busca o e-mail e o telefone do profissional
-    profissional = conn.execute('SELECT email, telefone FROM profissionais WHERE nome = ?',
-                                (profissional_nome,)).fetchone()
-
-    if profissional:
-        # Envia e-mail de notificação (se configurado)
-        if profissional['email']:
-            subject = "Novo Agendamento na Barbearia Style"
-            body = f"Olá {profissional_nome},\n\n" \
-                   f"Você tem um novo agendamento:\n" \
-                   f"Cliente: {cliente_nome}\n" \
-                   f"Serviço: {servico}\n" \
-                   f"Data: {data}\n" \
-                   f"Horário: {horario}\n\n" \
-                   f"Até logo!"
-            send_email_notification(profissional['email'], subject, body)
-
-        # Envia notificação de WhatsApp (se configurado)
-        if profissional['telefone']:
-            message = f"Olá {profissional_nome}, você tem um novo agendamento: Cliente: {cliente_nome}, Serviço: {servico}, Data: {data}, Horário: {horario}."
-            send_whatsapp_notification(profissional['telefone'], message)
-
     conn.close()
     flash('Agendamento realizado com sucesso!', 'success')
     return redirect(url_for('painel_cliente', cliente_nome=cliente_nome))
@@ -261,8 +166,6 @@ def painel_cliente():
     profissionais = conn.execute('SELECT nome FROM profissionais').fetchall()
     configuracoes = {row['chave']: row['valor'] for row in
                      conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
-    # Adicionando o favicon aqui
-    configuracoes['favicon_url'] = url_for('static', filename='logo.png')
     conn.close()
 
     return render_template('painel_cliente.html', cliente_nome=cliente_nome, agendamentos=agendamentos,
@@ -344,12 +247,11 @@ def painel_profissional_financeiro():
 
     # Lógica para calcular o faturamento em tempo real, já com a comissão aplicada
     faturamento_dia = \
-        conn.execute("SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda = date('now')",
-                     (profissional_nome,)).fetchone()[0] or 0
+    conn.execute("SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda = date('now')",
+                 (profissional_nome,)).fetchone()[0] or 0
     faturamento_semana = \
-        conn.execute(
-            "SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda >= date('now', '-7 days')",
-            (profissional_nome,)).fetchone()[0] or 0
+    conn.execute("SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda >= date('now', '-7 days')",
+                 (profissional_nome,)).fetchone()[0] or 0
     faturamento_mes = conn.execute(
         "SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND strftime('%Y-%m', data_venda) = strftime('%Y-%m', 'now')",
         (profissional_nome,)).fetchone()[0] or 0
@@ -426,13 +328,7 @@ def cadastro():
 
 @app.route('/admin')
 def admin():
-    conn = get_db_connection()
-    configuracoes = {row['chave']: row['valor'] for row in
-                     conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
-    # Adicionando o favicon aqui
-    configuracoes['favicon_url'] = url_for('static', filename='logo.png')
-    conn.close()
-    return render_template('admin.html', configuracoes=configuracoes)
+    return render_template('admin.html')
 
 
 # Rotas para Gerenciar Usuários
@@ -630,7 +526,7 @@ def relatorios():
     # Lógica para calcular o faturamento geral em tempo real
     faturamento_dia = conn.execute("SELECT SUM(valor) FROM vendas WHERE data_venda = date('now')").fetchone()[0] or 0
     faturamento_semana = \
-        conn.execute("SELECT SUM(valor) FROM vendas WHERE data_venda >= date('now', '-7 days')").fetchone()[0] or 0
+    conn.execute("SELECT SUM(valor) FROM vendas WHERE data_venda >= date('now', '-7 days')").fetchone()[0] or 0
     faturamento_mes = conn.execute(
         "SELECT SUM(valor) FROM vendas WHERE strftime('%Y-%m', data_venda) = strftime('%Y-%m', 'now')").fetchone()[
                           0] or 0
