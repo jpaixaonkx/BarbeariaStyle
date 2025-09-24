@@ -142,11 +142,21 @@ def send_whatsapp_notification(to_phone_number, message):
         print(f"Erro ao enviar WhatsApp: {e}")
 
 
+# --- Rota para a animação ---
 @app.route('/')
+def animacao():
+    return render_template('animacao.html')
+
+
+# --- Rota para o index.html principal ---
+@app.route('/home')
 def home():
     conn = get_db_connection()
     configuracoes = {row['chave']: row['valor'] for row in
                      conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
+    # Adicionando o favicon aqui
+    configuracoes['favicon_url'] = url_for('static', filename='logo.png')
+
     servicos = conn.execute('SELECT * FROM servicos').fetchall()
     profissionais = conn.execute('SELECT nome FROM profissionais').fetchall()
     conn.close()
@@ -251,6 +261,8 @@ def painel_cliente():
     profissionais = conn.execute('SELECT nome FROM profissionais').fetchall()
     configuracoes = {row['chave']: row['valor'] for row in
                      conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
+    # Adicionando o favicon aqui
+    configuracoes['favicon_url'] = url_for('static', filename='logo.png')
     conn.close()
 
     return render_template('painel_cliente.html', cliente_nome=cliente_nome, agendamentos=agendamentos,
@@ -332,11 +344,12 @@ def painel_profissional_financeiro():
 
     # Lógica para calcular o faturamento em tempo real, já com a comissão aplicada
     faturamento_dia = \
-    conn.execute("SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda = date('now')",
-                 (profissional_nome,)).fetchone()[0] or 0
+        conn.execute("SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda = date('now')",
+                     (profissional_nome,)).fetchone()[0] or 0
     faturamento_semana = \
-    conn.execute("SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda >= date('now', '-7 days')",
-                 (profissional_nome,)).fetchone()[0] or 0
+        conn.execute(
+            "SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND data_venda >= date('now', '-7 days')",
+            (profissional_nome,)).fetchone()[0] or 0
     faturamento_mes = conn.execute(
         "SELECT SUM(valor) FROM vendas WHERE profissional_nome = ? AND strftime('%Y-%m', data_venda) = strftime('%Y-%m', 'now')",
         (profissional_nome,)).fetchone()[0] or 0
@@ -416,6 +429,8 @@ def admin():
     conn = get_db_connection()
     configuracoes = {row['chave']: row['valor'] for row in
                      conn.execute('SELECT chave, valor FROM configuracoes').fetchall()}
+    # Adicionando o favicon aqui
+    configuracoes['favicon_url'] = url_for('static', filename='logo.png')
     conn.close()
     return render_template('admin.html', configuracoes=configuracoes)
 
@@ -615,7 +630,7 @@ def relatorios():
     # Lógica para calcular o faturamento geral em tempo real
     faturamento_dia = conn.execute("SELECT SUM(valor) FROM vendas WHERE data_venda = date('now')").fetchone()[0] or 0
     faturamento_semana = \
-    conn.execute("SELECT SUM(valor) FROM vendas WHERE data_venda >= date('now', '-7 days')").fetchone()[0] or 0
+        conn.execute("SELECT SUM(valor) FROM vendas WHERE data_venda >= date('now', '-7 days')").fetchone()[0] or 0
     faturamento_mes = conn.execute(
         "SELECT SUM(valor) FROM vendas WHERE strftime('%Y-%m', data_venda) = strftime('%Y-%m', 'now')").fetchone()[
                           0] or 0
